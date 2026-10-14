@@ -32,6 +32,16 @@ How the feature behaves from the player's and staff's point of view, including e
 
 Modules, features and external services this feature depends on or affects.
 
+## Acceptance criteria
+
+The observable behaviors that prove the feature works. Each one can be checked in a test or in game.
+
+- [ ] When a player does X, Y happens.
+
+## Failures and recovery
+
+What happens when an operation cannot be completed: a player disconnects halfway, a server is restarted, the database or Redis does not answer. For each case, what the player sees and how the system recovers.
+
 ## Known limitations
 
 What the feature does not do yet, or does on purpose in a way that may surprise someone.

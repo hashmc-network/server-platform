@@ -32,6 +32,16 @@ Como a feature se comporta do ponto de vista do jogador e da equipe, incluindo c
 
 Módulos, features e serviços externos dos quais esta feature depende ou que ela afeta.
 
+## Critérios de aceitação
+
+Os comportamentos observáveis que provam que a feature funciona. Cada um pode ser conferido em um teste ou dentro do jogo.
+
+- [ ] Quando um jogador faz X, acontece Y.
+
+## Falhas e recuperação
+
+O que acontece quando uma operação não pode ser concluída: um jogador desconecta no meio, um servidor é reiniciado, o banco ou o Redis não respondem. Para cada caso, o que o jogador vê e como o sistema se recupera.
+
 ## Limitações conhecidas
 
 O que a feature ainda não faz, ou faz de propósito de um jeito que pode surpreender alguém.
