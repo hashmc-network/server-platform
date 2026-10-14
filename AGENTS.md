@@ -21,6 +21,8 @@ Comments are forbidden, except `TODO` and `FIXME`.
 - Every behavior change comes with tests that cover it.
 - A bug fix starts with a test that reproduces the bug and fails before the fix.
 - Test business logic with fast unit tests over domain and service classes, using in-memory fakes. Use a server runtime harness only when the behavior really depends on the server runtime.
+- Behavior that depends on PostgreSQL or Redis, such as queries, migrations, transactions, caching and packets, is covered by integration tests against real instances started with Testcontainers. In-memory fakes do not replace them.
+- Flows that cross servers, such as moving a player through Velocity, are covered by integration tests once the project has the infrastructure for them.
 - Tests are deterministic: no dependency on real time, network, execution order or uncontrolled randomness.
 - Never delete, skip, disable or weaken a test or an assertion to make it pass. If a test is wrong, fix it and explain why in the pull request.
 - Run the tests that cover the change before declaring it done, and report the commands and results.

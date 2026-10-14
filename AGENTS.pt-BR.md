@@ -23,6 +23,8 @@ Comentários são proibidos, exceto `TODO` e `FIXME`.
 - Toda mudança de comportamento vem com testes que a cobrem.
 - Uma correção de bug começa com um teste que reproduz o bug e falha antes da correção.
 - Teste a regra de negócio com testes unitários rápidos sobre as classes de domínio e de serviço, usando implementações em memória. Use um ambiente que simula o servidor só quando o comportamento depende de verdade do runtime do servidor.
+- Comportamentos que dependem do PostgreSQL ou do Redis, como consultas, migrações, transações, cache e pacotes, são cobertos por testes de integração com instâncias reais iniciadas pelo Testcontainers. Implementações em memória não substituem esses testes.
+- Fluxos que passam por mais de um servidor, como levar um jogador de um servidor para outro pelo Velocity, são cobertos por testes de integração quando o projeto tiver a infraestrutura para isso.
 - Os testes são determinísticos: não dependem de horário real, rede, ordem de execução ou aleatoriedade sem controle.
 - Nunca apague, pule, desative ou enfraqueça um teste ou uma asserção para ele passar. Se o teste estiver errado, corrija-o e explique o motivo no pull request.
 - Rode os testes que cobrem a mudança antes de dar a tarefa como pronta, e informe os comandos e os resultados.
