@@ -1,9 +1,17 @@
+**English** | [Português](README.pt-BR.md)
+
 # HashMC Platform
 
-Plataforma da rede HashMC para as versões modernas do Minecraft.
+HashMC network platform for modern Minecraft versions.
 
-Sucessora do [`server-plugin`](https://github.com/hashmc-network/server-plugin), que fica como legado da rede 1.8.8.
+Successor to [`server-plugin`](https://github.com/hashmc-network/server-plugin), which remains the legacy 1.8.8 network.
 
-## Estado atual
+## Current state
 
-Projeto em início de desenvolvimento. Ainda não há build, módulos ou CI.
+Early development. There is no build, modules or CI yet.
+
+## Contributing
+
+- [CONTRIBUTING.md](CONTRIBUTING.md): commits, documentation and pull request standards.
+- [docs/](docs/README.md): documentation for every feature.
+- [AGENTS.md](AGENTS.md): rules for AI agents working on this repository.
