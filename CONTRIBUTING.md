@@ -6,6 +6,27 @@ These rules apply to everyone who changes this repository, people and AI agents 
 
 Commits and pull requests are in English. Documentation is in English and Portuguese.
 
+## Branches
+
+| Branch | What it holds |
+|---|---|
+| `production` | What is running in production. It is the default branch. |
+| `homologation` | What is deployed to the test servers and being validated. |
+| `development` | What was developed and is not in production yet. |
+
+Changes move in one direction:
+
+```text
+work branch → development → homologation → production
+```
+
+- Work branches are created from `development` and merged back into it through a pull request.
+- When a set of changes is ready to be tested, `development` is merged into `homologation` through a pull request.
+- After it is validated on the test servers, `homologation` is merged into `production` through a pull request.
+- `production` and `homologation` only receive changes through pull requests.
+
+> **TODO:** merging a pull request into `homologation` will upload the files to the test servers and restart them automatically. This automation is not implemented yet.
+
 ## Commits
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and are written in **English**.
@@ -108,6 +129,7 @@ Documentation describes how the feature works **today**. History lives in git an
 
 ## Pull requests
 
+- Work pull requests target `development`. Only promotions target `homologation` and `production`, as described in [Branches](#branches).
 - The title follows the commit convention: `feat(anticheat): flag reach above 3.1 blocks`.
 - The body follows the [template](.github/pull_request_template.md), which GitHub fills in automatically:
   - **Problem:** what is wrong or missing, and why it matters.

@@ -6,6 +6,27 @@ Estas regras valem para todo mundo que muda este repositório, pessoas e agentes
 
 Commits e pull requests são em inglês. A documentação é em inglês e em português.
 
+## Branches
+
+| Branch | O que ela contém |
+|---|---|
+| `production` | O que está rodando em produção. É a branch padrão. |
+| `homologation` | O que está nos servidores de teste e sendo validado. |
+| `development` | O que já foi desenvolvido e ainda não está em produção. |
+
+As mudanças andam em um único sentido:
+
+```text
+branch de trabalho → development → homologation → production
+```
+
+- As branches de trabalho saem da `development` e voltam para ela por pull request.
+- Quando um conjunto de mudanças está pronto para ser testado, a `development` é mergeada na `homologation` por pull request.
+- Depois de validada nos servidores de teste, a `homologation` é mergeada na `production` por pull request.
+- A `production` e a `homologation` só recebem mudanças por pull request.
+
+> **TODO:** o merge de um pull request na `homologation` vai enviar os arquivos para os servidores de teste e reiniciá-los automaticamente. Essa automação ainda não foi implementada.
+
 ## Commits
 
 Os commits seguem o [Conventional Commits](https://www.conventionalcommits.org/pt-br/v1.0.0/) e são escritos em **inglês**.
@@ -108,6 +129,7 @@ A documentação descreve como a feature funciona **hoje**. O histórico fica no
 
 ## Pull requests
 
+- Os pull requests de trabalho vão para a `development`. Só as promoções vão para a `homologation` e a `production`, como descrito em [Branches](#branches).
 - O título segue o padrão de commit: `feat(anticheat): flag reach above 3.1 blocks`.
 - O corpo segue o [modelo](.github/pull_request_template.md), que o GitHub preenche sozinho:
   - **Problem:** o que está errado ou faltando, e por que isso importa.
