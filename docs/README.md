@@ -1,0 +1,17 @@
+**English** | [Português](README.pt-BR.md)
+
+# Documentation
+
+Every feature of the platform is documented in its own folder under [`features/`](features/), in English and Portuguese. The rules are in [CONTRIBUTING.md](../CONTRIBUTING.md#documentation).
+
+## Features
+
+No features documented yet.
+
+<!-- One line per feature, in alphabetical order: - [Anticheat](features/anticheat/README.md): short summary. -->
+
+## Documenting a new feature
+
+1. Copy [`features/_template/`](features/_template/) to `features/<feature>/`, using the same name as the commit scope.
+2. Fill in both `README.md` and `README.pt-BR.md`.
+3. Add the feature to the list above, in both this file and [README.pt-BR.md](README.pt-BR.md).
