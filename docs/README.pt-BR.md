@@ -4,6 +4,10 @@
 
 Cada feature da plataforma é documentada na própria pasta dentro de [`features/`](features/), em inglês e português. As regras estão no [CONTRIBUTING.pt-BR.md](../CONTRIBUTING.pt-BR.md#documentação).
 
+## Arquitetura
+
+- [Arquitetura da rede](architecture/README.pt-BR.md): como a rede é dividida em servidores, hoje e no futuro.
+
 ## Features
 
 Nenhuma feature documentada ainda.

@@ -10,6 +10,8 @@ Sucessora do [`server-plugin`](https://github.com/hashmc-network/server-plugin),
 
 Projeto em início de desenvolvimento. Ainda não há build, módulos ou CI.
 
+A divisão planejada dos servidores está em [Arquitetura da rede](docs/architecture/README.pt-BR.md).
+
 ## Como contribuir
 
 - [CONTRIBUTING.pt-BR.md](CONTRIBUTING.pt-BR.md): padrões de commit, documentação e pull request.

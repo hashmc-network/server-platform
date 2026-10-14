@@ -4,6 +4,10 @@
 
 Every feature of the platform is documented in its own folder under [`features/`](features/), in English and Portuguese. The rules are in [CONTRIBUTING.md](../CONTRIBUTING.md#documentation).
 
+## Architecture
+
+- [Network architecture](architecture/README.md): how the network is split into servers, today and in the future.
+
 ## Features
 
 No features documented yet.
