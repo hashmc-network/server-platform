@@ -10,7 +10,7 @@ Sucessora do [`server-plugin`](https://github.com/hashmc-network/server-plugin),
 
 Projeto em início de desenvolvimento. Ainda não há build, módulos ou CI.
 
-A divisão planejada dos servidores está em [Arquitetura da rede](docs/architecture/README.pt-BR.md).
+A arquitetura planejada está documentada em [docs/](docs/README.pt-BR.md#arquitetura): a [rede](docs/architecture/network/README.pt-BR.md), a [persistência](docs/architecture/persistence/README.pt-BR.md) e a [mensageria](docs/architecture/messaging/README.pt-BR.md).
 
 ## Como contribuir
 

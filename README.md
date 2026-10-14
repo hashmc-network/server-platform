@@ -10,7 +10,7 @@ Successor to [`server-plugin`](https://github.com/hashmc-network/server-plugin),
 
 Early development. There is no build, modules or CI yet.
 
-The planned server layout is in [Network architecture](docs/architecture/README.md).
+The planned architecture is documented in [docs/](docs/README.md#architecture): the [network](docs/architecture/network/README.md), [persistence](docs/architecture/persistence/README.md) and [messaging](docs/architecture/messaging/README.md).
 
 ## Contributing
 

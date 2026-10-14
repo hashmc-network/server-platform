@@ -6,7 +6,9 @@ Cada feature da plataforma é documentada na própria pasta dentro de [`features
 
 ## Arquitetura
 
-- [Arquitetura da rede](architecture/README.pt-BR.md): como a rede é dividida em servidores, hoje e no futuro.
+- [Rede](architecture/network/README.pt-BR.md): como a rede é dividida em servidores, hoje e no futuro.
+- [Persistência](architecture/persistence/README.pt-BR.md): como os dados são guardados no PostgreSQL e ficam em cache na memória e no Redis.
+- [Mensageria](architecture/messaging/README.pt-BR.md): como os servidores trocam pacotes pelo Redis.
 
 ## Features
 

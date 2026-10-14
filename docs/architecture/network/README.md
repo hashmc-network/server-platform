@@ -28,6 +28,13 @@ The network starts with four processes: one Velocity and three Paper servers.
 | `bedwars` | Paper | The BedWars lobby and its arenas, running in the same server. |
 | `duels` | Paper | The Duels lobby and its matches, running in the same server. |
 
+Every process connects to the shared infrastructure:
+
+| Service | Role |
+|---|---|
+| PostgreSQL | Database and source of truth. See [Persistence](../persistence/README.md). |
+| Redis | Shared cache and transport for packets between servers. See [Persistence](../persistence/README.md) and [Messaging](../messaging/README.md). |
+
 ### Why each game runs in its own server
 
 - **Isolation:** each Paper server has its own TPS. A heavy problem in BedWars does not slow down Duels, and a crash in one game does not take the others down.
