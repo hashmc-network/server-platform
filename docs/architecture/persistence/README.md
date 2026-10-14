@@ -2,7 +2,7 @@
 
 # Persistence
 
-How the network stores and caches data. The goal is to handle heavy load, today and as the network grows, without making each server heavier than it needs to be.
+How the network stores and caches data. The goal is to handle heavy load, today and as the network grows, without making each server heavier than it needs to be, and without ever losing data the player was told is saved.
 
 ## Roles
 
@@ -13,6 +13,17 @@ How the network stores and caches data. The goal is to handle heavy load, today 
 | Source of truth | PostgreSQL | Every piece of data that must survive a restart. If Redis and PostgreSQL disagree, PostgreSQL is right. |
 
 Redis is also the transport for messages between servers, described in [Messaging](../messaging/README.md).
+
+## Kinds of data
+
+Not all data deserves the same guarantee. Each kind has its own write strategy:
+
+| Kind | Examples | Strategy |
+|---|---|---|
+| Critical | Coins, purchases, rewards, MMR | Written to PostgreSQL in a transaction **before** the operation is confirmed to the player. |
+| Non-critical | Cosmetic preferences, settings, toggles | Applied in memory and written in the background. A crash may lose the last few seconds of changes, and that is accepted. |
+| Match state | Teams, kills, beds, timers of a running match | Memory only, on the server running the match. |
+| History | Match results, statistics | Written once, with a unique id per record, so a retry never creates a duplicate. |
 
 ## Reading data
 
@@ -27,18 +38,43 @@ memory → Redis → PostgreSQL
 
 ## Writing data
 
+### Critical data
+
+- The operation runs as a PostgreSQL transaction outside the main thread. The player sees the result only after the transaction commits.
+- The game does not freeze while it waits: the main thread keeps running, and the result is applied when the transaction returns.
+- Balances change through atomic operations in the database, never by overwriting a value read earlier. A purchase is `subtract 2,000 if the balance is at least 2,000`, not `set the balance to 3,000`.
+- If the transaction fails, the operation fails and the player is told so. Nothing is shown as done before it is saved.
+
+### Non-critical data
+
 - Changes are applied to memory first, so gameplay never waits for the database.
 - Each object tracks what changed, and only the changed data is written.
-- Changes are saved to PostgreSQL in the background, on a fixed interval and right away when the player leaves the server.
+- Changes are saved to PostgreSQL in the background, on a fixed interval and when the player leaves the server.
+
+### History
+
 - Append-only data, such as match history and statistics, is written in batches instead of one row at a time.
+- Each record has a unique id generated when the event happens. Writing the same record twice has no effect.
+
+## Session ownership
+
+At any moment, each online player's data has exactly **one owner**: the server the player is on.
+
+- Ownership is recorded in Redis with an expiration that the owner keeps renewing while it is alive.
+- Only the owner writes that player's data.
+- Every record in PostgreSQL carries a version number. A write is only applied if it is based on the current version, so a server that lost ownership can never overwrite newer data.
+- If the owner crashes, its ownership expires and the next server loads the player from PostgreSQL. Critical data is already there; only recent non-critical changes may be lost.
 
 ## Moving between servers
 
-When a player goes from `bedwars` to `lobby`, the new server must not load data that the old one has not saved yet.
+When a player goes from `bedwars` to `lobby`, the destination must load exactly what the origin had.
 
-1. The server the player is leaving saves the player's data to Redis and then to PostgreSQL.
-2. The server the player is joining reads from Redis first, which already has the latest data, and falls back to PostgreSQL.
-3. Every saved record carries a version number. A write is only applied if its version is newer than the stored one, so a late save can never overwrite newer data.
+1. The origin stops accepting changes to that player's data.
+2. The origin writes every pending change to PostgreSQL, checking the version and that it still owns the session.
+3. The origin updates the player's data in Redis and releases ownership.
+4. The transfer is confirmed, and the destination takes ownership and loads the data, from Redis first and PostgreSQL as a fallback.
+
+If step 2 fails or takes longer than the timeout, the transfer is cancelled: the player stays on the origin, ownership does not change, and the player is told the transfer failed. A transfer never happens with unsaved data.
 
 ## Where each kind of data lives
 
@@ -46,13 +82,17 @@ When a player goes from `bedwars` to `lobby`, the new server must not load data 
 |---|---|---|---|
 | Profile of an online player | Yes | Yes, while online | Yes |
 | Profile of an offline player | No | No | Yes |
+| Coins and other balances | Yes, as a read copy | Yes, as a read copy | Yes, every change in a transaction |
 | Rankings | No | Yes, rebuilt from PostgreSQL | Yes |
+| State of a running match | Yes | No | No |
 | Match history and statistics | No | No | Yes, written in batches |
+| Session ownership | No | Yes, with expiration | No |
 | Server status and player counts | No | Yes, with expiration | No |
 
 ## Rules
 
 - **Never block the main thread.** Database and Redis calls always run outside the server's main thread. Results that touch the game are scheduled back to the main thread.
+- **Critical data is confirmed only after it is saved.** Never show the player a purchase, reward or balance change that is not committed in PostgreSQL.
 - **Durable data never lives only in Redis.** Redis is a cache and can be emptied at any time without losing anything.
 - **Ephemeral data in Redis always expires.** Every key that is not a cache of PostgreSQL data has an expiration time.
 - **Redis keys share a prefix:** `hashmc:<area>:<id>`, such as `hashmc:profile:<uuid>`.
