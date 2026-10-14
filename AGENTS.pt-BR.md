@@ -28,6 +28,12 @@ Comentários são proibidos, exceto `TODO` e `FIXME`.
 - Rode os testes que cobrem a mudança antes de dar a tarefa como pronta, e informe os comandos e os resultados.
 - Nunca diga que uma validação passou sem tê-la rodado. Quando algo não puder ser rodado, diga isso e explique o motivo.
 
+## Branches
+
+- Siga o fluxo de branches do [CONTRIBUTING.pt-BR.md](CONTRIBUTING.pt-BR.md#branches).
+- Crie as branches de trabalho a partir da `development` e abra os pull requests para a `development`.
+- Nunca faça commit direto na `production` ou na `homologation`.
+
 ## Commits
 
 - Siga o padrão de commit do [CONTRIBUTING.pt-BR.md](CONTRIBUTING.pt-BR.md#commits): Conventional Commits, em inglês, com o escopo igual ao nome da pasta de documentação da feature.

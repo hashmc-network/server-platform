@@ -26,6 +26,12 @@ Comments are forbidden, except `TODO` and `FIXME`.
 - Run the tests that cover the change before declaring it done, and report the commands and results.
 - Never claim a validation passed without running it. When something cannot be run, say so and say why.
 
+## Branches
+
+- Follow the branch flow in [CONTRIBUTING.md](CONTRIBUTING.md#branches).
+- Create work branches from `development` and open pull requests against `development`.
+- Never commit directly to `production` or `homologation`.
+
 ## Commits
 
 - Follow the commit standard in [CONTRIBUTING.md](CONTRIBUTING.md#commits): Conventional Commits, in English, with the scope matching the feature's documentation folder.
