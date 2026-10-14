@@ -9,6 +9,8 @@ Every feature of the platform is documented in its own folder under [`features/`
 - [Network](architecture/network/README.md): how the network is split into servers, today and in the future.
 - [Persistence](architecture/persistence/README.md): how data is stored in PostgreSQL and cached in memory and Redis.
 - [Messaging](architecture/messaging/README.md): how servers exchange packets over Redis.
+- [Game engine](architecture/game-engine/README.md): how matches run and stay isolated inside each game server.
+- [Security](architecture/security/README.md): what is exposed, and how servers, services and secrets are protected.
 
 ## Features
 

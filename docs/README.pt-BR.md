@@ -9,6 +9,8 @@ Cada feature da plataforma é documentada na própria pasta dentro de [`features
 - [Rede](architecture/network/README.pt-BR.md): como a rede é dividida em servidores, hoje e no futuro.
 - [Persistência](architecture/persistence/README.pt-BR.md): como os dados são guardados no PostgreSQL e ficam em cache na memória e no Redis.
 - [Mensageria](architecture/messaging/README.pt-BR.md): como os servidores trocam pacotes pelo Redis.
+- [Motor de jogo](architecture/game-engine/README.pt-BR.md): como as partidas rodam e ficam isoladas dentro de cada servidor de jogo.
+- [Segurança](architecture/security/README.pt-BR.md): o que fica exposto e como servidores, serviços e segredos são protegidos.
 
 ## Features
 
