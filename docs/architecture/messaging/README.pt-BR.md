@@ -70,7 +70,20 @@ O Redis Pub/Sub entrega cada pacote **no máximo uma vez**. Um servidor que est�
   - quando um jogador entra, o servidor confere as pendências dele;
   - enquanto a rede roda, cada servidor confere periodicamente as pendências dos seus jogadores online.
 
-Exemplo: uma compra na loja é salva no PostgreSQL como entrega pendente, e um pacote avisa o servidor onde o jogador está para entregá-la. Se o pacote se perder, a conferência periódica encontra a entrega alguns segundos depois, mesmo que o jogador nunca saia do servidor. A entrega é marcada como feita na mesma transação que a concede, então nunca é entregue duas vezes.
+Exemplo: uma compra na loja é salva no PostgreSQL como entrega pendente, e um pacote avisa o servidor onde o jogador está para entregá-la. Se o pacote se perder, a conferência periódica encontra a entrega alguns segundos depois, mesmo que o jogador nunca saia do servidor. Quando a entrega só muda o PostgreSQL, ela é marcada como feita na mesma transação que a concede, então nunca é entregue duas vezes.
+
+### O que cada tipo de entrega consegue garantir
+
+Uma transação do PostgreSQL só cobre o que está no PostgreSQL. O que está na memória de um servidor, como o inventário de um jogador, não pode fazer parte da mesma transação, então a garantia depende do que é entregue:
+
+| Entrega | Garantia |
+|---|---|
+| Algo guardado no PostgreSQL, como o desbloqueio de um cosmético ou um cargo | Exatamente uma vez: conceder e marcar como feita acontecem na mesma transação. |
+| Um saldo no PostgreSQL, como moedas | Exatamente uma vez: uma mudança atômica na mesma transação que marca a entrega como feita. |
+| Um item colocado no inventário de um jogador | Não é coberto pela transação. A feature precisa manter o item apoiado em um estado salvo e reconciliá-lo, e documentar como. |
+| Uma mensagem ou efeito visual | Pode ser repetido ou se perder. Cada feature decide o que é aceitável. |
+
+Uma feature que entrega qualquer coisa fora do PostgreSQL documenta qual garantia oferece e como se recupera de uma falha.
 
 ## Reconexão
 

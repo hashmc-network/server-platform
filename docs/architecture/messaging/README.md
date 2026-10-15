@@ -70,7 +70,20 @@ Redis Pub/Sub delivers each packet **at most once**. A server that is offline or
   - when a player joins, the server checks the player's pending items;
   - while the network runs, each server periodically checks the pending items of its online players.
 
-Example: a store purchase is saved in PostgreSQL as a pending delivery, and a packet tells the player's current server to deliver it. If the packet is lost, the periodic check finds the delivery a few seconds later, even if the player never leaves the server. The delivery is marked as done in the same transaction that grants it, so it is never delivered twice.
+Example: a store purchase is saved in PostgreSQL as a pending delivery, and a packet tells the player's current server to deliver it. If the packet is lost, the periodic check finds the delivery a few seconds later, even if the player never leaves the server. When the delivery only changes PostgreSQL, it is marked as done in the same transaction that grants it, so it is never delivered twice.
+
+### What each kind of delivery can guarantee
+
+A PostgreSQL transaction only covers what lives in PostgreSQL. Anything that lives in a server's memory, such as a player's inventory, cannot be part of the same transaction, so the guarantee depends on what is delivered:
+
+| Delivery | Guarantee |
+|---|---|
+| Something stored in PostgreSQL, such as a cosmetic unlock or a rank | Exactly once: granting it and marking it as done happen in the same transaction. |
+| A balance in PostgreSQL, such as coins | Exactly once: an atomic change in the same transaction that marks the delivery as done. |
+| An item placed in a player's inventory | Not covered by the transaction. The feature must keep the item backed by persisted state and reconcile it, and document how. |
+| A message or visual effect | May be repeated or lost. Each feature decides which is acceptable. |
+
+A feature that delivers anything outside PostgreSQL documents which guarantee it offers and how it recovers from a failure.
 
 ## Reconnection
 
