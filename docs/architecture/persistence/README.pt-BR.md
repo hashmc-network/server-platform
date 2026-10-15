@@ -23,7 +23,8 @@ Nem todo dado merece a mesma garantia. Cada tipo tem a própria estratégia de e
 | Crítico | Moedas, compras, recompensas, MMR | Gravado no PostgreSQL em uma transação **antes** de a operação ser confirmada ao jogador. |
 | Não crítico | Preferências de cosméticos, configurações, opções | Aplicado na memória e gravado em segundo plano. Um crash pode perder os últimos segundos de mudanças, e isso é aceito. |
 | Estado da partida | Times, kills, camas, timers de uma partida em andamento | Só na memória, no servidor que roda a partida. |
-| Histórico | Resultados de partidas, estatísticas | Gravado uma vez, com um id único por registro, para que uma nova tentativa nunca crie duplicata. |
+| Fim de partida | Resultado final, recompensas críticas | Salvos em uma única transação, que também marca a partida como terminada. Veja [Motor de jogo](../game-engine/README.pt-BR.md#resultados). |
+| Histórico | Estatísticas detalhadas | Gravadas em lotes, com um id único por registro, para que uma nova tentativa nunca crie duplicata. |
 
 ## Leitura
 
@@ -53,7 +54,8 @@ memória → Redis → PostgreSQL
 
 ### Histórico
 
-- Dados que só crescem, como histórico de partidas e estatísticas, são gravados em lotes, e não uma linha por vez.
+- Dados que só crescem, como estatísticas detalhadas, são gravados em lotes, e não uma linha por vez.
+- O fim de uma partida não vai em lote: o resultado e as recompensas críticas são salvos juntos, em uma transação.
 - Cada registro tem um id único, gerado quando o evento acontece. Gravar o mesmo registro duas vezes não tem efeito.
 
 ## Dono da sessão
@@ -95,7 +97,8 @@ Se o passo 2 falhar ou passar do tempo limite, a transferência é cancelada: o 
 | Moedas e outros saldos | Sim, como cópia de leitura | Sim, como cópia de leitura | Sim, toda mudança em uma transação |
 | Rankings | Não | Sim, reconstruídos a partir do PostgreSQL | Sim |
 | Estado de uma partida em andamento | Sim | Não | Não |
-| Histórico de partidas e estatísticas | Não | Não | Sim, gravados em lotes |
+| Resultado da partida e recompensas críticas | Não | Não | Sim, em uma transação |
+| Estatísticas detalhadas | Não | Não | Sim, gravadas em lotes |
 | Dono da sessão e geração | Não | Não | Sim |
 | Sinal de vida dos servidores | Não | Sim, com expiração | Não |
 | Status dos servidores e contagem de jogadores | Não | Sim, com expiração | Não |

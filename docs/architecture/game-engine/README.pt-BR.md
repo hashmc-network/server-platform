@@ -41,7 +41,7 @@ qualquer estado → CANCELLED → CLOSED
 | `WAITING` | A partida aceita jogadores até atingir o mínimo do modo. |
 | `STARTING` | Contagem regressiva. Se jogadores saírem e o número cair abaixo do mínimo, a partida volta para `WAITING`. |
 | `RUNNING` | O jogo está acontecendo. Ninguém novo entra, exceto jogadores voltando, quando o modo permite. |
-| `ENDING` | O vencedor é definido, os resultados e recompensas são salvos e os jogadores veem o resultado. |
+| `ENDING` | O vencedor é definido, o resultado e as recompensas são salvos e os jogadores veem o resultado. |
 | `CANCELLED` | A partida foi interrompida por uma falha ou um desligamento. A política do modo decide o que acontece com os jogadores. |
 | `CLOSED` | Os jogadores voltam para o lobby do jogo, as tarefas são canceladas e a instância de arena é liberada. |
 
@@ -79,11 +79,19 @@ Quando um modo permite reconexão, a plataforma registra no Redis a qual partida
 ### Desligamentos e crashes
 
 - **Desligamento planejado:** o servidor para de aceitar partidas novas, aplica a política de desligamento de cada modo às partidas em andamento e só então desliga.
-- **Crash:** o estado das partidas em andamento se perde, já que ele só existe em memória. Um modo que compensa jogadores depois de um crash registra o início de cada partida no PostgreSQL. Quando o servidor inicia de novo, ele encontra as partidas que começaram e nunca terminaram, e aplica a política de crash do modo.
+- **Crash:** o estado das partidas em andamento se perde, já que ele só existe em memória. Um modo que compensa jogadores depois de um crash registra o início de cada partida no PostgreSQL. Quando o servidor inicia de novo, ele encontra as partidas que começaram e nunca foram marcadas como terminadas ou canceladas, e aplica a política de crash do modo só a elas.
 
 ## Resultados
 
-Quando uma partida chega ao `ENDING`, os resultados são salvos seguindo as regras de [persistência](../persistence/README.pt-BR.md): o histórico é gravado com o id único da partida, para nunca ser duplicado, e recompensas críticas, como moedas e MMR, são salvas em uma transação antes de serem mostradas aos jogadores.
+O fim de uma partida é salvo em **uma única transação no PostgreSQL**, que:
+
+1. registra o resultado, com o id único da partida;
+2. concede as recompensas críticas, como moedas e MMR;
+3. marca a partida como terminada.
+
+Ou as três coisas são salvas, ou nenhuma é. Um crash nunca deixa recompensas concedidas para uma partida que ainda parece não terminada, então a compensação de crash nunca paga duas vezes. Salvar de novo o mesmo id de partida não tem efeito.
+
+As recompensas só são mostradas aos jogadores depois que a transação é confirmada. As estatísticas detalhadas, que não são críticas, são salvas depois, em lotes, como descrito em [Persistência](../persistence/README.pt-BR.md).
 
 ## Regras
 

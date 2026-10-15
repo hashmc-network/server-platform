@@ -23,7 +23,8 @@ Not all data deserves the same guarantee. Each kind has its own write strategy:
 | Critical | Coins, purchases, rewards, MMR | Written to PostgreSQL in a transaction **before** the operation is confirmed to the player. |
 | Non-critical | Cosmetic preferences, settings, toggles | Applied in memory and written in the background. A crash may lose the last few seconds of changes, and that is accepted. |
 | Match state | Teams, kills, beds, timers of a running match | Memory only, on the server running the match. |
-| History | Match results, statistics | Written once, with a unique id per record, so a retry never creates a duplicate. |
+| Match end | Final result, critical rewards | Saved in a single transaction that also marks the match as finished. See [Game engine](../game-engine/README.md#results). |
+| History | Detailed statistics | Written in batches, with a unique id per record, so a retry never creates a duplicate. |
 
 ## Reading data
 
@@ -53,7 +54,8 @@ memory → Redis → PostgreSQL
 
 ### History
 
-- Append-only data, such as match history and statistics, is written in batches instead of one row at a time.
+- Append-only data, such as detailed statistics, is written in batches instead of one row at a time.
+- The end of a match is not batched: its result and critical rewards are saved together in one transaction.
 - Each record has a unique id generated when the event happens. Writing the same record twice has no effect.
 
 ## Session ownership
@@ -95,7 +97,8 @@ If step 2 fails or takes longer than the timeout, the transfer is cancelled: the
 | Coins and other balances | Yes, as a read copy | Yes, as a read copy | Yes, every change in a transaction |
 | Rankings | No | Yes, rebuilt from PostgreSQL | Yes |
 | State of a running match | Yes | No | No |
-| Match history and statistics | No | No | Yes, written in batches |
+| Match result and critical rewards | No | No | Yes, in one transaction |
+| Detailed statistics | No | No | Yes, written in batches |
 | Session ownership and generation | No | No | Yes |
 | Server heartbeat | No | Yes, with expiration | No |
 | Server status and player counts | No | Yes, with expiration | No |

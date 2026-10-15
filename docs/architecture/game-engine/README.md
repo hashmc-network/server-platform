@@ -41,7 +41,7 @@ any state → CANCELLED → CLOSED
 | `WAITING` | The match accepts players until the mode's minimum is reached. |
 | `STARTING` | Countdown. If players leave and the count drops below the minimum, the match goes back to `WAITING`. |
 | `RUNNING` | The game is being played. No new players join, except returning players when the mode allows it. |
-| `ENDING` | The winner is decided, results and rewards are saved, and players see the outcome. |
+| `ENDING` | The winner is decided, the result and rewards are saved, and players see the outcome. |
 | `CANCELLED` | The match was stopped by a failure or a shutdown. The mode's policy decides what happens to the players. |
 | `CLOSED` | Players are sent back to the game's lobby, tasks are cancelled and the arena instance is released. |
 
@@ -79,11 +79,19 @@ When a mode allows reconnection, the platform records in Redis which match the p
 ### Shutdowns and crashes
 
 - **Planned shutdown:** the server stops accepting new matches, applies each mode's shutdown policy to its running matches and only then stops.
-- **Crash:** the state of running matches is lost, since it only lives in memory. A mode that compensates players after a crash records the start of each match in PostgreSQL. When the server starts again, it finds the matches that started and never finished, and applies the mode's crash policy.
+- **Crash:** the state of running matches is lost, since it only lives in memory. A mode that compensates players after a crash records the start of each match in PostgreSQL. When the server starts again, it finds the matches that started and were never marked as finished or cancelled, and applies the mode's crash policy to them only.
 
 ## Results
 
-When a match reaches `ENDING`, its results are saved following the [persistence](../persistence/README.md) rules: history is written with the match's unique id, so it is never duplicated, and critical rewards such as coins and MMR are saved in a transaction before they are shown to the players.
+The end of a match is saved in **one PostgreSQL transaction** that:
+
+1. records the result, under the match's unique id;
+2. grants the critical rewards, such as coins and MMR;
+3. marks the match as finished.
+
+Either all three are saved or none is. A crash can never leave rewards granted for a match that still looks unfinished, so crash compensation never pays twice. Saving the same match id again has no effect.
+
+Rewards are shown to the players only after the transaction commits. Detailed statistics that are not critical are saved afterwards in batches, as described in [Persistence](../persistence/README.md).
 
 ## Rules
 
