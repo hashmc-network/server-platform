@@ -81,7 +81,9 @@ O motor não decide estas regras. Cada modo de jogo define as suas:
 
 ### Reconexão
 
-Quando um modo permite reconexão, a plataforma registra no Redis a qual partida o jogador pertence, com uma expiração igual à janela de reconexão do modo. Um jogador que volta é mandado de novo para aquela partida enquanto o registro existir.
+Quando um modo permite reconexão, a plataforma registra no Redis, para o jogador, o id da partida, o servidor que a roda e a instância de arena. O registro expira depois da janela de reconexão do modo.
+
+Quando o jogador volta enquanto o registro existe, a plataforma pergunta àquele servidor se a partida ainda existe e se ainda aceita o jogador. Só então o jogador é mandado de volta. Se não, o registro é removido e o jogador vai para o lobby.
 
 ### Desligamentos e crashes
 

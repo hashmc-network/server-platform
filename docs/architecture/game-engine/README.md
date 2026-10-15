@@ -81,7 +81,9 @@ The engine does not decide these rules. Each game mode defines its own:
 
 ### Reconnection
 
-When a mode allows reconnection, the platform records in Redis which match the player belongs to, with an expiration equal to the mode's reconnection window. A returning player is sent back to that match while the record exists.
+When a mode allows reconnection, the platform records in Redis, for the player, the match id, the server running it and the arena instance. The record expires after the mode's reconnection window.
+
+When the player comes back while the record exists, the platform asks that server whether the match still exists and still accepts the player. Only then is the player sent back. Otherwise the record is removed and the player goes to the lobby.
 
 ### Shutdowns and crashes
 
