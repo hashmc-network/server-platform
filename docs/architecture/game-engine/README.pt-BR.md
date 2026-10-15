@@ -58,13 +58,14 @@ As mudanças de estado só acontecem pelo ciclo de vida, e nunca alterando o est
 ```text
 AVAILABLE → RESERVED → IN_USE → RESETTING → AVAILABLE
                                     │
-                                    └─→ DISABLED   (erro de configuração ou modelo corrompido)
+                                    └─→ DISABLED
 ```
 
 - Uma partida reserva uma instância disponível quando é criada e a libera quando fecha.
 - Depois de uma partida, a instância é restaurada a partir do modelo antes de poder ser usada de novo.
-- **Se a restauração falhar**, a instância é ignorada e a restauração é tentada de novo automaticamente. As outras instâncias continuam atendendo partidas enquanto isso.
-- **Só quando a falha vem de um erro de configuração ou de um modelo corrompido** a arena é desativada. O erro é registrado no log, a equipe é avisada, e a arena fica fora de uso até ser corrigida.
+- **Se a restauração falhar**, a instância é ignorada e a restauração é tentada de novo automaticamente, esperando mais tempo a cada falha seguida. As outras instâncias continuam atendendo partidas enquanto isso.
+- **A arena é desativada** quando a falha é um erro de configuração ou um modelo corrompido, ou depois de um número configurável de restaurações seguidas com falha (5 por padrão). O erro é registrado no log, a equipe é avisada, e a arena fica fora de uso até alguém corrigi-la e reativá-la.
+- Uma restauração bem-sucedida zera a contagem de falhas.
 
 ## Políticas definidas por cada modo de jogo
 

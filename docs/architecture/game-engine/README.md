@@ -58,13 +58,14 @@ State changes only happen through the lifecycle, never by setting the state dire
 ```text
 AVAILABLE → RESERVED → IN_USE → RESETTING → AVAILABLE
                                     │
-                                    └─→ DISABLED   (configuration error or corrupted template)
+                                    └─→ DISABLED
 ```
 
 - A match reserves an available instance when it is created and releases it when it closes.
 - After a match, the instance is reset from its template before it can be used again.
-- **If a reset fails**, the instance is skipped and the reset is retried automatically. Other instances keep serving matches in the meantime.
-- **Only when the failure is caused by a configuration error or a corrupted template** is the arena disabled. The error is logged and the staff is alerted, and the arena stays out of use until it is fixed.
+- **If a reset fails**, the instance is skipped and the reset is retried automatically, waiting longer after each consecutive failure. Other instances keep serving matches in the meantime.
+- **The arena is disabled** when the failure is a configuration error or a corrupted template, or after a configurable number of consecutive failed resets (5 by default). The error is logged, the staff is alerted, and the arena stays out of use until someone fixes and re-enables it.
+- A successful reset clears the failure count.
 
 ## Policies defined by each game mode
 
