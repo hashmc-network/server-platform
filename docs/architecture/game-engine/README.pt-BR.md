@@ -18,13 +18,19 @@ Os nomes das classes são decididos quando o motor for implementado. Este docume
 
 ## Isolamento entre partidas
 
-Cada instância de arena roda no próprio mundo. Além disso, o motor garante:
+Cada instância de arena roda no próprio mundo. Essa é a decisão inicial, porque deixa o isolamento e a restauração simples. Antes de ser tratada como definitiva para alta escala, ela vai ser medida: memória por mundo, tempo de carregamento e tempo de restauração, comparados com várias arenas por mundo.
+
+Além disso, o motor garante:
 
 - **Uma partida por jogador.** A cada momento, um jogador pertence a no máximo uma partida, ou ao lobby do jogo.
 - **Os eventos ficam dentro da partida.** Todo evento que envolve um jogador, entidade, bloco ou mundo é direcionado à partida dona dele. Uma interação entre duas partidas diferentes, como dano entre jogadores de partidas diferentes, é cancelada.
 - **Comunicação restrita.** O chat, a lista de jogadores (tab) e a visibilidade dos jogadores só incluem jogadores da mesma partida.
 - **As tarefas pertencem à partida.** Toda tarefa agendada é registrada na partida e cancelada quando ela fecha, então nada continua rodando depois que ela termina.
-- **As falhas ficam dentro da partida.** Um erro dentro de uma partida cancela só aquela partida, e nunca as outras nem o servidor.
+- **Erros tratados ficam dentro da partida.** Um erro capturado enquanto a lógica de uma partida roda cancela só aquela partida, e as outras continuam rodando.
+
+### O que o isolamento não consegue garantir
+
+Todas as partidas de um servidor dividem o mesmo processo, a mesma thread principal e a mesma memória. Problemas fatais afetam todas as partidas daquele servidor: falta de memória, um loop infinito ou uma chamada que trava a thread principal. O motor diminui a chance desses problemas, mas não consegue contê-los. Contê-los é o motivo de cada jogo rodar no próprio servidor, como descrito na [arquitetura da rede](../network/README.pt-BR.md).
 
 ## Ciclo de vida da partida
 
@@ -96,4 +102,5 @@ As recompensas só são mostradas aos jogadores depois que a transação é conf
 ## Regras
 
 - **A lógica da partida roda na thread principal.** Banco, Redis e outros trabalhos lentos rodam fora dela, como descrito em [Persistência](../persistence/README.pt-BR.md).
+- **Nada lento ou que trave roda na thread principal**, porque isso congelaria todas as partidas do servidor.
 - **Cada modo de jogo documenta as suas políticas** na documentação da própria feature.

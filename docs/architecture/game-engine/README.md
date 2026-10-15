@@ -18,13 +18,19 @@ Class names are decided when the engine is implemented. This document defines th
 
 ## Isolation between matches
 
-Every arena instance runs in its own world. On top of that, the engine enforces:
+Every arena instance runs in its own world. This is the initial decision because it makes isolation and resets simple. Before it is treated as final for high scale, it will be measured: memory per world, load time and reset time, compared with several arenas per world.
+
+On top of that, the engine enforces:
 
 - **One match per player.** At any moment a player belongs to at most one match, or to the game's lobby.
 - **Events stay inside their match.** Every event involving a player, entity, block or world is routed to the match that owns it. An interaction between two different matches, such as damage between players of different matches, is cancelled.
 - **Scoped communication.** Chat, the tab list and player visibility only include players of the same match.
 - **Tasks belong to a match.** Every scheduled task is registered to its match and cancelled when the match closes, so nothing keeps running after it ends.
-- **Failures stay inside their match.** An error inside a match cancels that match only, never the other matches or the server.
+- **Handled errors stay inside their match.** An error caught while running a match's logic cancels that match only, and the other matches keep running.
+
+### What isolation cannot guarantee
+
+All matches of a server share the same process, main thread and memory. Fatal problems affect every match on that server: running out of memory, an infinite loop or a blocking call on the main thread. The engine reduces the chance of these problems; it cannot contain them. Containing them is the reason each game runs in its own server, as described in the [network architecture](../network/README.md).
 
 ## Match lifecycle
 
@@ -96,4 +102,5 @@ Rewards are shown to the players only after the transaction commits. Detailed st
 ## Rules
 
 - **Match logic runs on the main thread.** Database, Redis and other slow work runs outside it, as described in [Persistence](../persistence/README.md).
+- **Nothing slow or blocking runs on the main thread**, since it would freeze every match on the server.
 - **Each game mode documents its policies** in its own feature documentation.
