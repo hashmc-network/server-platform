@@ -22,12 +22,17 @@ How the network protects its servers and services. The principle is simple: play
 ## PostgreSQL
 
 - Listens only on the private network, and accepts connections only from the network's servers.
-- The servers connect with a dedicated user that has only the privileges they need. It is never a superuser.
+- Permissions are separated by service. The game servers and the proxy connect with a user that can read and write data but cannot change the schema. Migrations run with a separate user. Neither is a superuser.
 
 ## Redis
 
-- Listens only on the private network, with authentication enabled.
-- **Access to Redis means control of the network:** any process that can publish to Redis can send packets to every server. Servers trust the packets they receive because only the network's own servers can reach Redis, so keeping Redis private is mandatory.
+- Listens only on the private network.
+- Uses ACLs: each service has its own Redis user, limited to the commands, keys and channels it needs. A service that only reads server status cannot publish packets.
+- **Access to Redis means control of the network:** a user allowed to publish packets can send them to every server. The private network is the first barrier and the ACLs are the second; both are mandatory.
+
+## Traffic between machines
+
+While every service runs on the same machine, traffic stays local. Once PostgreSQL, Redis or the servers run on different machines, the traffic between them uses TLS, unless it already travels over an encrypted private network.
 
 ## Secrets
 

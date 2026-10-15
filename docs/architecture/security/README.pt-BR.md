@@ -22,12 +22,17 @@ Como a rede protege os seus servidores e serviços. O princípio é simples: os 
 ## PostgreSQL
 
 - Escuta só na rede privada e só aceita conexões dos servidores da rede.
-- Os servidores se conectam com um usuário dedicado, que tem só os privilégios de que precisam. Ele nunca é superusuário.
+- As permissões são separadas por serviço. Os servidores de jogo e o proxy se conectam com um usuário que lê e grava dados, mas não altera o schema. As migrações rodam com outro usuário. Nenhum dos dois é superusuário.
 
 ## Redis
 
-- Escuta só na rede privada, com autenticação ligada.
-- **Acesso ao Redis significa controle da rede:** qualquer processo que consiga publicar no Redis consegue mandar pacotes para todos os servidores. Os servidores confiam nos pacotes que recebem porque só os próprios servidores da rede alcançam o Redis, então manter o Redis privado é obrigatório.
+- Escuta só na rede privada.
+- Usa ACLs: cada serviço tem o próprio usuário no Redis, limitado aos comandos, chaves e canais de que precisa. Um serviço que só lê o status dos servidores não consegue publicar pacotes.
+- **Acesso ao Redis significa controle da rede:** um usuário com permissão para publicar pacotes consegue mandá-los para todos os servidores. A rede privada é a primeira barreira e as ACLs são a segunda; as duas são obrigatórias.
+
+## Tráfego entre máquinas
+
+Enquanto todos os serviços rodam na mesma máquina, o tráfego fica local. Quando o PostgreSQL, o Redis ou os servidores rodarem em máquinas diferentes, o tráfego entre eles usa TLS, a não ser que já passe por uma rede privada criptografada.
 
 ## Segredos
 
