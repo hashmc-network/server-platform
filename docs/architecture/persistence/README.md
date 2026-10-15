@@ -60,19 +60,29 @@ memory → Redis → PostgreSQL
 
 At any moment, each online player's data has exactly **one owner**: the server the player is on.
 
-- Ownership is recorded in Redis with an expiration that the owner keeps renewing while it is alive.
-- Only the owner writes that player's data.
-- Every record in PostgreSQL carries a version number. A write is only applied if it is based on the current version, so a server that lost ownership can never overwrite newer data.
-- If the owner crashes, its ownership expires and the next server loads the player from PostgreSQL. Critical data is already there; only recent non-critical changes may be lost.
+- Ownership is recorded in PostgreSQL, together with a **generation** number that only increases.
+- A server takes ownership with a single atomic update that sets itself as the owner and increments the generation. The update only succeeds if the session is free or its current owner is no longer alive.
+- Every write to that player's data carries the generation the server received. PostgreSQL rejects any write whose generation is not the current one.
+- A server whose write is rejected has lost ownership: it stops changing that player's data and disconnects the player from itself.
+- Each server publishes a heartbeat in Redis with a short expiration. A server is alive while its heartbeat exists.
+- If the owner crashes, its heartbeat expires and the next server takes ownership with a new generation, loading the player from PostgreSQL. Critical data is already there; only recent non-critical changes may be lost.
+
+This keeps a single writer even when a server freezes for a long time, such as during a long garbage collection pause. When it resumes, its generation is outdated and every write it tries is refused.
+
+### When Redis is unavailable
+
+- Sessions that already have an owner keep working, because ownership and the generation check live in PostgreSQL.
+- Planned transfers keep working, because the origin releases the session explicitly.
+- Taking over a session from a server that did not release it waits until Redis is back, since there is no way to tell whether the old owner is still alive. The player is told to try again shortly.
 
 ## Moving between servers
 
 When a player goes from `bedwars` to `lobby`, the destination must load exactly what the origin had.
 
 1. The origin stops accepting changes to that player's data.
-2. The origin writes every pending change to PostgreSQL, checking the version and that it still owns the session.
-3. The origin updates the player's data in Redis and releases ownership.
-4. The transfer is confirmed, and the destination takes ownership and loads the data, from Redis first and PostgreSQL as a fallback.
+2. The origin writes every pending change to PostgreSQL, with its generation.
+3. The origin updates the player's data in Redis and releases the session in PostgreSQL.
+4. The transfer is confirmed, and the destination takes ownership with a new generation and loads the data, from Redis first and PostgreSQL as a fallback.
 
 If step 2 fails or takes longer than the timeout, the transfer is cancelled: the player stays on the origin, ownership does not change, and the player is told the transfer failed. A transfer never happens with unsaved data.
 
@@ -86,13 +96,15 @@ If step 2 fails or takes longer than the timeout, the transfer is cancelled: the
 | Rankings | No | Yes, rebuilt from PostgreSQL | Yes |
 | State of a running match | Yes | No | No |
 | Match history and statistics | No | No | Yes, written in batches |
-| Session ownership | No | Yes, with expiration | No |
+| Session ownership and generation | No | No | Yes |
+| Server heartbeat | No | Yes, with expiration | No |
 | Server status and player counts | No | Yes, with expiration | No |
 
 ## Rules
 
 - **Never block the main thread.** Database and Redis calls always run outside the server's main thread. Results that touch the game are scheduled back to the main thread.
 - **Critical data is confirmed only after it is saved.** Never show the player a purchase, reward or balance change that is not committed in PostgreSQL.
+- **Every write of player data carries the owner's generation.** A write without it, or with an old one, is a bug.
 - **Durable data never lives only in Redis.** Redis is a cache and can be emptied at any time without losing anything.
 - **Ephemeral data in Redis always expires.** Every key that is not a cache of PostgreSQL data has an expiration time.
 - **Redis keys share a prefix:** `hashmc:<area>:<id>`, such as `hashmc:profile:<uuid>`.

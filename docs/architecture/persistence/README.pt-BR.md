@@ -60,19 +60,29 @@ memória → Redis → PostgreSQL
 
 A cada momento, os dados de cada jogador online têm exatamente **um dono**: o servidor onde o jogador está.
 
-- O dono fica registrado no Redis, com uma expiração que ele continua renovando enquanto estiver vivo.
-- Só o dono grava os dados daquele jogador.
-- Todo registro no PostgreSQL carrega um número de versão. Uma escrita só é aplicada se partir da versão atual, então um servidor que perdeu a posse nunca sobrescreve dados mais novos.
-- Se o dono cair, a posse expira e o próximo servidor carrega o jogador do PostgreSQL. Os dados críticos já estão lá; só as mudanças não críticas recentes podem se perder.
+- O dono fica registrado no PostgreSQL, junto com um número de **geração** que só aumenta.
+- Um servidor assume a posse com uma única atualização atômica, que o define como dono e aumenta a geração. A atualização só funciona se a sessão estiver livre ou se o dono atual não estiver mais vivo.
+- Toda escrita nos dados daquele jogador carrega a geração que o servidor recebeu. O PostgreSQL recusa qualquer escrita cuja geração não seja a atual.
+- Um servidor que tem uma escrita recusada perdeu a posse: ele para de mudar os dados daquele jogador e desconecta o jogador de si.
+- Cada servidor publica um sinal de vida (heartbeat) no Redis, com uma expiração curta. Um servidor está vivo enquanto o sinal dele existir.
+- Se o dono cair, o sinal de vida dele expira e o próximo servidor assume a posse com uma geração nova, carregando o jogador do PostgreSQL. Os dados críticos já estão lá; só as mudanças não críticas recentes podem se perder.
+
+Isso mantém um único escritor mesmo quando um servidor trava por muito tempo, como numa pausa longa de garbage collection. Quando ele volta, a geração dele está desatualizada e toda escrita que ele tentar é recusada.
+
+### Quando o Redis está indisponível
+
+- As sessões que já têm dono continuam funcionando, porque a posse e a conferência da geração ficam no PostgreSQL.
+- As trocas de servidor planejadas continuam funcionando, porque a origem libera a sessão explicitamente.
+- Assumir a sessão de um servidor que não a liberou fica esperando o Redis voltar, já que não há como saber se o dono antigo ainda está vivo. O jogador é avisado para tentar de novo em instantes.
 
 ## Troca de servidor
 
 Quando um jogador vai do `bedwars` para o `lobby`, o destino precisa carregar exatamente o que a origem tinha.
 
 1. A origem para de aceitar mudanças nos dados daquele jogador.
-2. A origem grava no PostgreSQL toda mudança pendente, conferindo a versão e se ainda é dona da sessão.
-3. A origem atualiza os dados do jogador no Redis e libera a posse.
-4. A transferência é confirmada, e o destino assume a posse e carrega os dados, primeiro do Redis e, se não encontrar, do PostgreSQL.
+2. A origem grava no PostgreSQL toda mudança pendente, com a sua geração.
+3. A origem atualiza os dados do jogador no Redis e libera a sessão no PostgreSQL.
+4. A transferência é confirmada, e o destino assume a posse com uma geração nova e carrega os dados, primeiro do Redis e, se não encontrar, do PostgreSQL.
 
 Se o passo 2 falhar ou passar do tempo limite, a transferência é cancelada: o jogador continua na origem, o dono não muda e o jogador é avisado de que a transferência falhou. Uma transferência nunca acontece com dados não salvos.
 
@@ -86,13 +96,15 @@ Se o passo 2 falhar ou passar do tempo limite, a transferência é cancelada: o 
 | Rankings | Não | Sim, reconstruídos a partir do PostgreSQL | Sim |
 | Estado de uma partida em andamento | Sim | Não | Não |
 | Histórico de partidas e estatísticas | Não | Não | Sim, gravados em lotes |
-| Dono da sessão | Não | Sim, com expiração | Não |
+| Dono da sessão e geração | Não | Não | Sim |
+| Sinal de vida dos servidores | Não | Sim, com expiração | Não |
 | Status dos servidores e contagem de jogadores | Não | Sim, com expiração | Não |
 
 ## Regras
 
 - **Nunca bloqueie a thread principal.** Chamadas ao banco e ao Redis sempre rodam fora da thread principal do servidor. Resultados que mexem no jogo são agendados de volta para a thread principal.
 - **Dado crítico só é confirmado depois de salvo.** Nunca mostre ao jogador uma compra, recompensa ou mudança de saldo que não esteja confirmada no PostgreSQL.
+- **Toda escrita de dados do jogador carrega a geração do dono.** Uma escrita sem ela, ou com uma geração antiga, é um bug.
 - **Dado durável nunca fica só no Redis.** O Redis é um cache e pode ser esvaziado a qualquer momento sem perder nada.
 - **Dado temporário no Redis sempre expira.** Toda chave que não é cache de um dado do PostgreSQL tem tempo de expiração.
 - **As chaves do Redis seguem um prefixo:** `hashmc:<área>:<id>`, como `hashmc:profile:<uuid>`.
