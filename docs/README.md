@@ -11,6 +11,7 @@ Every feature of the platform is documented in its own folder under [`features/`
 - [Messaging](architecture/messaging/README.md): how servers exchange packets over Redis.
 - [Game engine](architecture/game-engine/README.md): how matches run and stay isolated inside each game server.
 - [Security](architecture/security/README.md): what is exposed, and how servers, services and secrets are protected.
+- [Observability](architecture/observability/README.md): which metrics the network measures.
 
 ## Features
 
