@@ -19,11 +19,12 @@ Como a rede HashMC é dividida em servidores, hoje e no plano para o futuro.
 
 As setas mostram o caminho do jogador. Tecnicamente, toda conexão passa pelo proxy, que leva o jogador de um servidor para outro.
 
-A rede começa com quatro processos: um Velocity e três servidores Paper.
+A rede começa com cinco processos: um Velocity e quatro servidores Paper.
 
 | Processo | Software | Papel |
 |---|---|---|
 | `velocity` | Velocity | Porta de entrada. Recebe todas as conexões e leva os jogadores de um servidor para outro. |
+| `auth` | Paper | Servidor de autenticação. O papel dele será detalhado quando ele for implementado. |
 | `lobby` | Paper | Lobby principal. Onde os jogadores chegam e escolhem um jogo. |
 | `bedwars` | Paper | O lobby do BedWars e as arenas dele, rodando no mesmo servidor. |
 | `duels` | Paper | O lobby do Duels e as partidas dele, rodando no mesmo servidor. |
