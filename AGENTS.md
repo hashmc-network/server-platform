@@ -6,6 +6,12 @@ Rules for AI agents working on this repository. Everything in [CONTRIBUTING.md](
 
 This file will receive more instructions as the project grows. When a rule here conflicts with a generic habit or default, this file wins.
 
+## Build
+
+- Follow the module structure and dependency rules in [Development](docs/development/README.md).
+- Run `./gradlew build` before declaring a change done. It compiles every module, runs the tests and checks the dependency rules.
+- Never write a version in a module's build file. Versions live only in `gradle/libs.versions.toml`.
+
 ## Code comments
 
 Comments are forbidden, except `TODO` and `FIXME`.

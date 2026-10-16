@@ -8,6 +8,12 @@ Este arquivo vai receber mais instruções conforme o projeto crescer. Quando um
 
 Os agentes leem a versão em inglês, o [AGENTS.md](AGENTS.md). As duas versões dizem a mesma coisa e são atualizadas juntas.
 
+## Build
+
+- Siga a estrutura de módulos e as regras de dependência de [Desenvolvimento](docs/development/README.pt-BR.md).
+- Rode `./gradlew build` antes de dar uma mudança como pronta. Ele compila todos os módulos, roda os testes e confere as regras de dependência.
+- Nunca escreva uma versão no build de um módulo. As versões ficam só no `gradle/libs.versions.toml`.
+
 ## Comentários no código
 
 Comentários são proibidos, exceto `TODO` e `FIXME`.
