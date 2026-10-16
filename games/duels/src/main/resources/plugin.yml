@@ -1,0 +1,6 @@
+name: HashMC-Duels
+version: '${version}'
+main: br.com.hashmc.duels.DuelsPlugin
+api-version: '${apiVersion}'
+depend:
+  - HashMC-Core

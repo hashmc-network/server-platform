@@ -1,0 +1,6 @@
+name: HashMC-Lobby
+version: '${version}'
+main: br.com.hashmc.lobby.LobbyPlugin
+api-version: '${apiVersion}'
+depend:
+  - HashMC-Core

@@ -1,0 +1,6 @@
+name: HashMC-Auth
+version: '${version}'
+main: br.com.hashmc.auth.AuthPlugin
+api-version: '${apiVersion}'
+depend:
+  - HashMC-Core
