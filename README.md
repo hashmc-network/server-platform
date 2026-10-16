@@ -8,7 +8,13 @@ Successor to [`server-plugin`](https://github.com/hashmc-network/server-plugin),
 
 ## Current state
 
-Early development. There is no build, modules or CI yet.
+Early development. The modules and the build are set up, with no features yet. There is no CI yet.
+
+```bash
+./gradlew build
+```
+
+The build assembles the plugins of each server in `build/servers/`. See [Development](docs/development/README.md).
 
 The planned architecture is documented in [docs/](docs/README.md#architecture): the [network](docs/architecture/network/README.md), [persistence](docs/architecture/persistence/README.md), [messaging](docs/architecture/messaging/README.md), [game engine](docs/architecture/game-engine/README.md), [security](docs/architecture/security/README.md) and [observability](docs/architecture/observability/README.md).
 

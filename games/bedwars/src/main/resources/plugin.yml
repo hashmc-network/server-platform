@@ -1,0 +1,6 @@
+name: HashMC-BedWars
+version: '${version}'
+main: br.com.hashmc.bedwars.BedWarsPlugin
+api-version: '${apiVersion}'
+depend:
+  - HashMC-Core

@@ -19,11 +19,12 @@ How the HashMC network is split into servers, today and in the plan for the futu
 
 The arrows show the player's path. Technically every connection goes through the proxy, which moves the player from one server to another.
 
-The network starts with four processes: one Velocity and three Paper servers.
+The network starts with five processes: one Velocity and four Paper servers.
 
 | Process | Software | Role |
 |---|---|---|
 | `velocity` | Velocity | Entry point. Receives every connection and moves players between servers. |
+| `auth` | Paper | Authentication server. Its role will be detailed when it is implemented. |
 | `lobby` | Paper | Main lobby. Where players arrive and choose a game. |
 | `bedwars` | Paper | The BedWars lobby and its arenas, running in the same server. |
 | `duels` | Paper | The Duels lobby and its matches, running in the same server. |

@@ -1,0 +1,6 @@
+{
+  "id": "hashmc-proxy",
+  "name": "HashMC Proxy",
+  "version": "${version}",
+  "main": "br.com.hashmc.proxy.ProxyPlugin"
+}

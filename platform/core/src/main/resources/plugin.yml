@@ -1,0 +1,4 @@
+name: HashMC-Core
+version: '${version}'
+main: br.com.hashmc.core.CorePlugin
+api-version: '${apiVersion}'
